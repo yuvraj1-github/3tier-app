@@ -16,7 +16,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 echo 'Pulling latest code from GitHub...'
-                git branch: 'main', url: 'https://github.com/yourname/three-tier-app.git'
+                git branch: 'main', url: 'https://github.com/yuvraj1-github/3tier-app.git'
             }
         }
 
