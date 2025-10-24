@@ -17,7 +17,7 @@ pipeline {
         stage('Build with Maven') {
             steps {
                 echo 'Building the application using Maven...'
-                dir('Backend/demo') {  // <-- folder where pom.xml is
+                dir('Backend/demo') {
                     bat 'mvn clean install -DskipTests'
                 }
             }
@@ -26,9 +26,8 @@ pipeline {
         stage('Run Application') {
             steps {
                 echo 'Running Spring Boot Application...'
-                // Kill any existing Java process (Windows)
                 bat "taskkill /F /IM java.exe /T || echo No running Java process"
-                // Start the Spring Boot app
+                bat "timeout /t 2 >nul"
                 bat "start cmd /c java -jar Backend\\demo\\target\\demo-0.0.1-SNAPSHOT.jar --server.port=%APP_PORT%"
             }
         }
