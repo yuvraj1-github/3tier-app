@@ -2,7 +2,8 @@ pipeline {
     agent any
 
     environment {
-        APP_PORT = "9090"
+        BACKEND_PORT = "9090"
+        FRONTEND_PORT = "8080"
     }
 
     stages {
@@ -14,31 +15,45 @@ pipeline {
             }
         }
 
-        stage('Build with Maven') {
+        stage('Build Backend with Maven') {
             steps {
-                echo 'Building the application using Maven...'
-                dir('Backend/demo') {
-                    bat 'mvn clean install -DskipTests'
+                echo 'Building Spring Boot backend...'
+                dir('backend') {
+                    bat 'mvn clean package -DskipTests'
                 }
             }
         }
 
-        stage('Run Application') {
+        stage('Run Backend') {
             steps {
-                echo 'Running Spring Boot Application...'
-                bat "taskkill /F /IM java.exe /T || echo No running Java process"
-                bat "timeout /t 2 >nul"
-                bat "start cmd /c java -jar Backend\\demo\\target\\demo-0.0.1-SNAPSHOT.jar --server.port=%APP_PORT%"
+                echo "Starting Spring Boot backend on port ${BACKEND_PORT}..."
+                dir('backend') {
+                    bat "start cmd /c \"mvn spring-boot:run\""
+                }
             }
         }
-    }
 
-    post {
-        success {
-            echo '✅ Application built and deployed successfully!'
+        stage('Wait for Backend') {
+            steps {
+                echo "Waiting 10 seconds for backend to start..."
+                sleep 10
+            }
         }
-        failure {
-            echo '❌ Build or deployment failed. Please check logs.'
+
+        stage('Serve Frontend') {
+            steps {
+                echo "Serving frontend on port ${FRONTEND_PORT}..."
+                dir('frontend') {
+                    bat "start cmd /c \"python -m http.server ${FRONTEND_PORT}\""
+                }
+            }
+        }
+
+        stage('Open Frontend in Browser') {
+            steps {
+                echo 'Opening frontend in default browser...'
+                bat "start http://localhost:${FRONTEND_PORT}"
+            }
         }
     }
 }
