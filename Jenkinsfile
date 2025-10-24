@@ -7,7 +7,6 @@ pipeline {
     }
 
     environment {
-        // Optional: customize your application port
         APP_PORT = "9090"
     }
 
@@ -23,17 +22,18 @@ pipeline {
         stage('Build with Maven') {
             steps {
                 echo 'Building the application using Maven...'
-                sh './mvnw clean install -DskipTests'
+                // Use bat for Windows
+                bat 'mvn clean install -DskipTests'
             }
         }
 
         stage('Run Application') {
             steps {
                 echo 'Running Spring Boot Application...'
-                // Kill old instance if running
-                sh 'pkill -f "demo-0.0.1-SNAPSHOT.jar" || true'
-                // Start new instance
-                sh 'nohup java -jar target/demo-0.0.1-SNAPSHOT.jar --server.port=${APP_PORT} > app.log 2>&1 &'
+                // Kill old instance if running (Windows)
+                bat 'taskkill /F /IM java.exe /T || echo No existing process found'
+                // Start new instance in background
+                bat "start cmd /c java -jar target/demo-0.0.1-SNAPSHOT.jar --server.port=%APP_PORT%"
             }
         }
     }
